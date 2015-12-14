@@ -35,6 +35,7 @@ Zc.AppView
 
     anchors.fill : parent
 
+    property string audioTmpFileName : ""
 
     PiComponents.ToolBar
     {
@@ -88,7 +89,8 @@ Zc.AppView
             text:  "record"
             onTriggered:
             {
-                audioRecorder.outputFileLocation = "D:/tmp/toto.wav";
+                //audioRecorder.outputFileLocation = "D:/tmp/toto.wav";
+                audioRecorder.outputFileLocation = audioTmpFileName
                 audioRecorder.record();
             }
         }
@@ -108,7 +110,8 @@ Zc.AppView
             text:  "play"
             onTriggered:
             {
-                playMusic.source =  "D:/tmp/toto.wav"
+                //playMusic.source =  "D:/tmp/toto.wav"
+                playMusic.source = audioTmpFileName
                 playMusic.play()
             }
         }
@@ -119,8 +122,9 @@ Zc.AppView
             onTriggered:
             {
                 playMusic.stop();
-                playMusic.source = "bidon" //D:/tmp/toto2.wav";
-                audioRecorder.outputFileLocation = "D:/tmp/toto.wav";
+                playMusic.source = "bidon"
+                //audioRecorder.outputFileLocation = "D:/tmp/toto.wav";
+                audioRecorder.outputFileLocation = audioTmpFileName
                 audioRecorder.clear()
             }
         }
@@ -174,6 +178,8 @@ Zc.AppView
     onLoaded :
     {
         activity.start();
+        audioTmpFileName = mainView.context.temporaryPath + "/audio.wav";
+        console.log(">> audioTmpFileName " + audioTmpFileName)
     }
 
     onClosed :

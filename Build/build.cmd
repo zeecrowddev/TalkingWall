@@ -1,7 +1,7 @@
 @echo off
 
-set NAME=ZcPostIt
-set CFGNAME=ZcPostIt
+set NAME=TalkingWall
+set CFGNAME=TalkingWall
 set RCC= %QTDIR%\bin\rcc.exe
 set SRC=..\Source\
 set OUTPUT=.\Deploy

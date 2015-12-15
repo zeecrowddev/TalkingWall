@@ -6,5 +6,6 @@
         <file>Components/ActionButtonStyle.qml</file>
         <file>Components/ActionList.qml</file>
         <file>Packages/TalkingWall.cfg</file>
+        <file>Resources/TestWav.wav</file>
     </qresource>
 </RCC>

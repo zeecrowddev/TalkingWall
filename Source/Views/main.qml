@@ -111,7 +111,11 @@ Zc.AppView
             onTriggered:
             {
                 //playMusic.source =  "D:/tmp/toto.wav"
-                playMusic.source = audioTmpFileName
+                playMusic.source = "file:/" + audioTmpFileName
+
+                console.log(">> playMusic.source " + playMusic.source)
+
+                //playMusic.source = "qrc:/TalkingWall/Resources/TestWav.wav"
                 playMusic.play()
             }
         }
@@ -175,15 +179,29 @@ Zc.AppView
 
     }
 
-    onLoaded :
-    {
+    onLoaded : {
         activity.start();
-        audioTmpFileName = mainView.context.temporaryPath + "/audio.wav";
+        if (Qt.platform.os !== "ios") {
+            audioTmpFileName = mainView.context.temporaryPath + "audio.wav";
+        } else {
+            audioTmpFileName = Zc.HostInfo.writableLocation(7) + "audio.wav";
+        }
+
+        console.log(">> Zc.HostInfo.writableLocation(0) " + Zc.HostInfo.writableLocation(0))
+        console.log(">> Zc.HostInfo.writableLocation(1) " + Zc.HostInfo.writableLocation(1))
+        console.log(">> Zc.HostInfo.writableLocation(2) " + Zc.HostInfo.writableLocation(2))
+        console.log(">> Zc.HostInfo.writableLocation(3) " + Zc.HostInfo.writableLocation(3))
+        console.log(">> Zc.HostInfo.writableLocation(4) " + Zc.HostInfo.writableLocation(4))
+        console.log(">> Zc.HostInfo.writableLocation(5) " + Zc.HostInfo.writableLocation(5))
+        console.log(">> Zc.HostInfo.writableLocation(6) " + Zc.HostInfo.writableLocation(6))
+        console.log(">> Zc.HostInfo.writableLocation(7) " + Zc.HostInfo.writableLocation(7))
+        console.log(">> Zc.HostInfo.writableLocation(8) " + Zc.HostInfo.writableLocation(8))
+        console.log(">> Zc.HostInfo.writableLocation(9) " + Zc.HostInfo.writableLocation(9))
+
         console.log(">> audioTmpFileName " + audioTmpFileName)
     }
 
-    onClosed :
-    {
+    onClosed : {
         activity.stop();
     }
 

@@ -37,6 +37,8 @@ Zc.AppView
 
     property string audioTmpFileName : ""
 
+    property var currentFileDescriptor : null
+
     PiComponents.ToolBar
     {
         id : toolbarBoard
@@ -59,18 +61,19 @@ Zc.AppView
         }
     }
 
-
-
     PiComponents.ActionList {
         id: contextualMenu
 
+        property var fileDescriptor : null
+
         Action {
-            text: qsTr("Edit")
+            text: qsTr("Delete")
             onTriggered: {
+                console.log(">> contextualMenu.fileDescriptor " + contextualMenu.fileDescriptor)
+                crowdDocumentFolder.deleteFile(contextualMenu.fileDescriptor)
             }
         }
     }
-
 
     menuActions :
         [
@@ -101,6 +104,9 @@ Zc.AppView
             onTriggered:
             {
                 console.log(">> stop")
+
+                //textArea.text = textArea.text + "audioRecorder.outputFileLocation " + audioRecorder.outputFileLocation + "\n"
+
                 audioRecorder.stop();
             }
         }
@@ -108,14 +114,19 @@ Zc.AppView
         Action {
             id: play
             text:  "play"
-            onTriggered:
-            {
-                //playMusic.source =  "D:/tmp/toto.wav"
-                playMusic.source = "file:/" + audioTmpFileName
+            onTriggered: {
+                if (Qt.platform.os  == "ios") {
+                    playMusic.source = "file:/" + audioTmpFileName
+                } else if (Qt.platform.os  == "android") {
+                    playMusic.source = "file://" + audioTmpFileName + ".mp4"
+                } else {
+                    playMusic.source = audioTmpFileName
+                }
+
+                //textArea.text = textArea.text + "playMusic.source" + playMusic.source + "\n"
 
                 console.log(">> playMusic.source " + playMusic.source)
 
-                //playMusic.source = "qrc:/TalkingWall/Resources/TestWav.wav"
                 playMusic.play()
             }
         }
@@ -127,9 +138,18 @@ Zc.AppView
             {
                 playMusic.stop();
                 playMusic.source = "bidon"
-                //audioRecorder.outputFileLocation = "D:/tmp/toto.wav";
                 audioRecorder.outputFileLocation = audioTmpFileName
                 audioRecorder.clear()
+            }
+        }
+        ,
+        Action {
+            id: addNew
+            text:  "Add"
+            onTriggered: {
+                cameraLoader.visible = true
+                cameraLoader.sourceComponent = cameraViewComponent
+                cameraLoader.item.open()
             }
         }
     ]
@@ -157,12 +177,12 @@ Zc.AppView
     }
 
     Audio {
-            id: playMusic
-            onStopped: {
-                console.log(">> on stopped")
-                source =  ""
-            }
+        id: playMusic
+        onStopped: {
+            console.log(">> on stopped")
+            source =  ""
         }
+    }
 
     Zc.CrowdActivity
     {
@@ -173,37 +193,242 @@ Zc.AppView
             id : appNotification
         }
 
-        onStarted :
+        Zc.MessageSender
         {
+            id      : notifySender
+            subject : "notify"
         }
 
+        Zc.MessageListener
+        {
+            id      : notifyListener
+            subject : "notify"
+
+            onMessageReceived :
+            {
+                console.log(">> message.body " + message.body)
+
+                var o = JSON.parse(message.body);
+
+                if ( o !==null )
+                {
+
+                    appNotification.blink();
+                    if (!mainView.isCurrentView)
+                    {
+                        appNotification.incrementNotification();
+                    }
+
+                    if ( o.action === "deleted" )
+                    {
+                        crowdDocumentFolder.removeFileDescriptor(o.fileName)
+                    }
+                    else if (o.action === "added")
+                    {
+                        var fd = crowdDocumentFolder.getFileDescriptor(o.fileName,true);
+                        fd.setRemoteInfo(o.size,new Date(o.lastModified));
+                    }
+                }
+
+            }
+        }
+
+        Zc.CrowdDocumentFolder
+        {
+            id   : crowdDocumentFolder
+            name : "talkingWallFiles"
+
+
+            Zc.QueryStatus
+            {
+                id : documentFolderQueryStatus
+
+                onErrorOccured :
+                {
+                    console.log(">> ERRROR OCCURED")
+                }
+
+                onCompleted :
+                {
+
+                    console.log(">> crowdDocumentFolder.count " + crowdDocumentFolder.count)
+                }
+            }
+
+
+            onFileUploaded : {
+                appNotification.logEvent(Zc.AppNotification.Add,"File",fileName,"image://icons/" + "file:///" + fileName)
+                notifySender.sendMessage("","{ \"action\" : \"added\" , \"fileName\" : \"" + fileName + "\" , \"lastModified\" : \"" + currentFileDescriptor.timeStamp + "\" }");
+            }
+
+            onFileDeleted : {
+                notifySender.sendMessage("","{ \"action\" : \"deleted\" , \"fileName\" : \"" + fileName + "\" } ");
+            }
+
+        }
+
+        onStarted :
+        {
+            grid.model = crowdDocumentFolder.files
+            crowdDocumentFolder.loadRemoteFiles(documentFolderQueryStatus);
+        }
+    }
+
+
+    Rectangle {
+        anchors.fill: parent
+        color : "white"
+    }
+    /*
+
+    TextArea
+    {
+        id :textArea
+        anchors.fill: parent
+        text : "Test"
+    }*/
+
+
+    GridView {
+        id: grid
+        anchors.fill: parent
+        anchors.margins: Zc.AppStyleSheet.width(0.01)
+
+        boundsBehavior: Flickable.StopAtBounds
+
+        cellWidth: Zc.AppStyleSheet.adjustSubdivisionSizeX(width, 2, -1, 1.5)
+        cellHeight: cellWidth*5/4
+        clip: true
+        delegate: /*CrowdDelegate {
+            iconUrl: crowdModel === null
+                ? ""
+                : rootObject.host.services.crowdService
+                    .getCrowdResourceUrl(crowdModel, "icon.png")
+
+            onPressAndHold: showContextMenu(crowdModel)
+
+            onClicked: {
+                if (!crowdModel.crowdDestroyed) {
+                    rootObject.services.viewService.showCrowdPage(crowdModel);
+                } else {
+                    crowds.leaveADestroyedCrowd(crowdModel)
+                }
+            }*/
+                  Image {
+            id : imageId
+            width: GridView.view.cellWidth - 2
+            height: GridView.view.cellHeight - 2
+            source : crowdDocumentFolder.getUrlFromFileName(name);
+            fillMode: Image.PreserveAspectFit
+
+            onStatusChanged:
+            {
+                if (status != Image.Error )
+                {
+                    messageTextId.visible = false
+                    messageTextId.text = "";
+                }
+                else
+                {
+                    messageTextId.visible = false
+                    messageTextId.text = "Error"
+                }
+
+            }
+
+            onProgressChanged:
+            {
+                if ( status === Image.Loading)
+                {
+                    messageTextId.text = Math.round(imageId.progress * 100) + "%"
+                    messageTextId.visible = true
+                }
+            }
+            Text
+            {
+                id : messageTextId
+                anchors.centerIn : parent
+                color : "black"
+                text : "Loading ..."
+            }
+            MouseArea {
+                anchors.fill: parent
+
+                onClicked: {
+                    contextualMenu.fileDescriptor = item
+                    contextualMenu.show()
+                }
+            }
+        }
+    }
+
+    Loader {
+        id : cameraLoader
+        visible : false
+
+        anchors.fill : parent
+    }
+
+    Component {
+
+        id : cameraViewComponent
+
+        CameraView {
+            id : cameraView
+            visible : false
+
+            onValidated : {
+                var fd = crowdDocumentFolder.createFileDescriptorFromFile(cameraLoader.item.path);
+
+                console.log(">> cameraLoader.item.path "  + cameraLoader.item.path)
+                console.log(">> fd " + fd)
+
+                if (fd !== null)
+                {
+                    console.log(">> fd.path " + fd.name)
+                    crowdDocumentFolder.localPath = "";
+                    currentFileDescriptor = fd;
+                    var result = crowdDocumentFolder.uploadFile(fd,cameraLoader.item.path)
+                    console.log(">> result : " + result)
+                }
+                cameraLoader.item.close()
+                cameraLoader.sourceComponent = undefined
+                cameraLoader.visible = false
+            }
+        }
     }
 
     onLoaded : {
         activity.start();
-        if (Qt.platform.os !== "ios") {
-            audioTmpFileName = mainView.context.temporaryPath + "audio.wav";
+
+        if (Qt.platform.os  == "ios") {
+            audioTmpFileName = Zc.HostInfo.writableLocation(7) + "/audio.wav";
+        } else if (Qt.platform.os  == "android") {
+            audioTmpFileName = Zc.HostInfo.writableLocation(4) + "/audio";
         } else {
-            audioTmpFileName = Zc.HostInfo.writableLocation(7) + "audio.wav";
+            audioTmpFileName = Zc.HostInfo.writableLocation(7) + "/audio.wav";
         }
 
-        console.log(">> Zc.HostInfo.writableLocation(0) " + Zc.HostInfo.writableLocation(0))
-        console.log(">> Zc.HostInfo.writableLocation(1) " + Zc.HostInfo.writableLocation(1))
-        console.log(">> Zc.HostInfo.writableLocation(2) " + Zc.HostInfo.writableLocation(2))
-        console.log(">> Zc.HostInfo.writableLocation(3) " + Zc.HostInfo.writableLocation(3))
-        console.log(">> Zc.HostInfo.writableLocation(4) " + Zc.HostInfo.writableLocation(4))
-        console.log(">> Zc.HostInfo.writableLocation(5) " + Zc.HostInfo.writableLocation(5))
-        console.log(">> Zc.HostInfo.writableLocation(6) " + Zc.HostInfo.writableLocation(6))
-        console.log(">> Zc.HostInfo.writableLocation(7) " + Zc.HostInfo.writableLocation(7))
-        console.log(">> Zc.HostInfo.writableLocation(8) " + Zc.HostInfo.writableLocation(8))
-        console.log(">> Zc.HostInfo.writableLocation(9) " + Zc.HostInfo.writableLocation(9))
-
         console.log(">> audioTmpFileName " + audioTmpFileName)
+        /* textArea.text = textArea.text + ">> audioTmpFileName " + audioTmpFileName  + "\n"
+        textArea.text = textArea.text + "-------------------------\n"
+        textArea.text = textArea.text + "Zc.HostInfo.writableLocation(0)" + Zc.HostInfo.writableLocation(0) + "\n"
+        textArea.text = textArea.text + "Zc.HostInfo.writableLocation(1)" + Zc.HostInfo.writableLocation(1) + "\n"
+        textArea.text = textArea.text + "Zc.HostInfo.writableLocation(2)" + Zc.HostInfo.writableLocation(2) + "\n"
+        textArea.text = textArea.text + "Zc.HostInfo.writableLocation(3)" + Zc.HostInfo.writableLocation(3) + "\n"
+        textArea.text = textArea.text + "Zc.HostInfo.writableLocation(4)" + Zc.HostInfo.writableLocation(4) + "\n"
+        textArea.text = textArea.text + "Zc.HostInfo.writableLocation(5)" + Zc.HostInfo.writableLocation(5) + "\n"
+        textArea.text = textArea.text + "Zc.HostInfo.writableLocation(6)" + Zc.HostInfo.writableLocation(6) + "\n"
+        textArea.text = textArea.text + "Zc.HostInfo.writableLocation(7)" + Zc.HostInfo.writableLocation(7) + "\n"
+        textArea.text = textArea.text + "Zc.HostInfo.writableLocation(8)" + Zc.HostInfo.writableLocation(8) + "\n"
+        textArea.text = textArea.text + "Zc.HostInfo.writableLocation(9)" + Zc.HostInfo.writableLocation(9) + "\n"*/
+
+
+        console.log(">> crowdDocumentFolder.files.count " + crowdDocumentFolder.files.count)
+
     }
 
     onClosed : {
         activity.stop();
     }
-
-
 }

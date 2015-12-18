@@ -12,3 +12,6 @@ OTHER_FILES += \
 RESOURCES += \
     ../../Source/Packages/TalkingBoard.cfg .qrc \
     ../../Source/TalkingWall.qrc
+
+DISTFILES += \
+    ../../Source/Views/CameraView.qml

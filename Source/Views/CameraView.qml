@@ -91,7 +91,8 @@ Item {
 
         audioRecorder.outputFileLocation = audioTmpFileName
         progressBarId.visible = true;
-        timerId.running = true;
+        buttonRecord.visible = false
+        timerId.start();
         audioRecorder.record();
     }
 
@@ -108,11 +109,13 @@ Item {
     Timer {
         id : timerId
            property int cpt : 0
-           interval: 500; running: false; repeat: false
+           interval: 500; running: false; repeat: true
            onTriggered: {
-               cpt ++;
+               cpt++;
+               console.log(">> cpt " + cpt)
                if (cpt === 12) {
-                   running = false;
+                   console.log(">> STOP")
+                   stop();
                    validated();
                }
                progressBarId.value = cpt;
@@ -226,6 +229,7 @@ Item {
         autoTransform : true
 
         Button {
+            id : buttonRecord
             anchors.centerIn: parent
             text: qsTr("Record")
             onClicked: {
@@ -237,7 +241,7 @@ Item {
 
     ProgressBar {
         id : progressBarId
-        anchors.verticalCenter: parent
+        anchors.verticalCenter: parent.verticalCenter
         width : parent.width
         minimumValue: 0
         maximumValue: 12

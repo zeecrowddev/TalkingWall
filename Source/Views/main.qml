@@ -73,6 +73,65 @@ Zc.AppView
                 crowdDocumentFolder.deleteFile(contextualMenu.fileDescriptor)
             }
         }
+        Action {
+            text: qsTr("Play")
+            onTriggered: {
+                var name = contextualMenu.fileDescriptor.name;
+                console.log(">> name " + name)
+                var nameWav = contextualMenu.fileDescriptor.name.replace(".jpg",".wav");
+                console.log(">> nameWav " + nameWav)
+                var url = crowdDocumentFolder.getUrlFromFileName(name);
+                console.log(">> url " + url)
+                url = url.replace(name,"sounds/" + nameWav);
+                console.log(">> url to play " + url)
+
+                /*
+
+                var to = "";
+
+                if (Qt.platform.os  == "ios") {
+                    crowdDocumentFolder.localPath = Zc.HostInfo.writableLocation(7) //+ "/listen.wav";
+                } else if (Qt.platform.os  == "android") {
+                    crowdDocumentFolder.localPath =  Zc.HostInfo.writableLocation(4) //+ "/listen.wav";
+                } else {
+                    crowdDocumentFolder.localPath = Zc.HostInfo.writableLocation(7) //+ "/listen.wav";
+                }
+                var fd = crowdDocumentFolder.getFileDescriptor(contextualMenu.fileDescriptor.name,false)
+                documentFolderId.ensureLocalPathExists("sounds");
+                console.log('>> fd ' + fd)
+                fd.name = "sounds/" +nameWav;
+
+                crowdDocumentFolder
+
+                var res = crowdDocumentFolder.downloadFileTo(fd,to);
+
+                console.log(">> res " + res)
+                playMusic.source = url;
+
+            //    playMusic.source = "http://www.wavsource.com/snds_2015-12-13_4694675918641206/movie_stars/bogart/down_to_cases.wav"
+
+                playMusic.play();
+                */
+
+                var to = "";
+
+                if (Qt.platform.os  == "ios") {
+                    to = Zc.HostInfo.writableLocation(7) + "/listen.wav";
+                } else if (Qt.platform.os  == "android") {
+                    to  =  Zc.HostInfo.writableLocation(4) + "/listen.wav";
+                } else {
+                    to = Zc.HostInfo.writableLocation(7) + "/listen.wav";
+                }
+
+                console.log(">> to ")
+
+                var result =  crowdSharedResource.downloadFileTo("sounds/" + nameWav,to,downloadFileQueryId);
+
+                console.log(">> result " + result)
+
+            }
+        }
+
     }
 
     menuActions :
@@ -127,6 +186,8 @@ Zc.AppView
 
                 console.log(">> playMusic.source " + playMusic.source)
 
+                playMusic.source = "http://www.wavsource.com/snds_2015-12-13_4694675918641206/movie_stars/bogart/down_to_cases.wav"
+
                 playMusic.play()
             }
         }
@@ -153,6 +214,7 @@ Zc.AppView
             }
         }
     ]
+
 
     function generateId()
     {
@@ -233,6 +295,50 @@ Zc.AppView
             }
         }
 
+        Zc.CrowdSharedResource
+        {
+            id   : crowdSharedResource
+            name : "TalkingWallFolder"
+
+            Zc.StorageQueryStatus
+            {
+                id : downloadFileQueryId
+
+                onCompleted : {
+
+                    console.log(">> Download completetd")
+                    var to = "";
+
+                    if (Qt.platform.os  == "ios") {
+                        to = Zc.HostInfo.writableLocation(7) + "/listen.wav";
+                    } else if (Qt.platform.os  == "android") {
+                        to  =  Zc.HostInfo.writableLocation(4) + "/listen.wav";
+                    } else {
+                        to = Zc.HostInfo.writableLocation(7) + "/listen.wav";
+                    }
+
+                    if (Qt.platform.os  == "ios") {
+                        playMusic.source = "file:/" + to
+                    } else if (Qt.platform.os  == "android") {
+                        playMusic.source = "file://" + to
+                    } else {
+                        playMusic.source = to
+                    }
+
+
+                    playMusic.source = to
+                    console.log(">> playMusic.source " + playMusic.source)
+
+                    playMusic.play()
+
+
+                }
+
+            }
+
+        }
+
+
         Zc.CrowdDocumentFolder
         {
             id   : crowdDocumentFolder
@@ -254,6 +360,21 @@ Zc.AppView
                     console.log(">> crowdDocumentFolder.count " + crowdDocumentFolder.count)
                 }
             }
+
+            /*
+            onFileDownloaded : {
+                console.log(">> fileName " + fileName)
+                console.log(">> localFilePath " + localFilePath)
+
+                if (Qt.platform.os  == "ios") {
+                    playMusic.source = "file:/" + localFilePath
+                } else if (Qt.platform.os  == "android") {
+                    playMusic.source = "file://" + localFilePath
+                } else {
+                    playMusic.source = localFilePath
+                }
+                 playMusic.play()
+            }*/
 
 
             onFileUploaded : {
@@ -314,50 +435,58 @@ Zc.AppView
                     crowds.leaveADestroyedCrowd(crowdModel)
                 }
             }*/
-                  Image {
-            id : imageId
+                  Item{
             width: GridView.view.cellWidth - 2
             height: GridView.view.cellHeight - 2
-            source : crowdDocumentFolder.getUrlFromFileName(name);
-            fillMode: Image.PreserveAspectFit
-
-            onStatusChanged:
-            {
-                if (status != Image.Error )
-                {
-                    messageTextId.visible = false
-                    messageTextId.text = "";
-                }
-                else
-                {
-                    messageTextId.visible = false
-                    messageTextId.text = "Error"
-                }
-
-            }
-
-            onProgressChanged:
-            {
-                if ( status === Image.Loading)
-                {
-                    messageTextId.text = Math.round(imageId.progress * 100) + "%"
-                    messageTextId.visible = true
-                }
-            }
-            Text
-            {
-                id : messageTextId
-                anchors.centerIn : parent
-                color : "black"
-                text : "Loading ..."
-            }
-            MouseArea {
+            Rectangle {
                 anchors.fill: parent
+                color : "lightgrey"
+            }
 
-                onClicked: {
-                    contextualMenu.fileDescriptor = item
-                    contextualMenu.show()
+            Image {
+                id : imageId
+                source : crowdDocumentFolder.getUrlFromFileName(name);
+                fillMode: Image.PreserveAspectFit
+                anchors.fill: parent
+                onStatusChanged:
+                {
+                    if (status != Image.Error )
+                    {
+                        messageTextId.visible = false
+                        messageTextId.text = "";
+                    }
+                    else
+                    {
+                        messageTextId.visible = false
+                        messageTextId.text = "Error"
+                    }
+
                 }
+
+                onProgressChanged:
+                {
+                    if ( status === Image.Loading)
+                    {
+                        messageTextId.text = Math.round(imageId.progress * 100) + "%"
+                        messageTextId.visible = true
+                    }
+                }
+                Text
+                {
+                    id : messageTextId
+                    anchors.centerIn : parent
+                    color : "black"
+                    text : "Loading ..."
+                }
+                MouseArea {
+                    anchors.fill: parent
+
+                    onClicked: {
+                        contextualMenu.fileDescriptor = item
+                        contextualMenu.show()
+                    }
+                }
+
             }
         }
     }
@@ -378,19 +507,37 @@ Zc.AppView
             visible : false
 
             onValidated : {
-                var fd = crowdDocumentFolder.createFileDescriptorFromFile(cameraLoader.item.path);
+                var fdSound = crowdDocumentFolder.createFileDescriptorFromFile(cameraLoader.item.audioTmpFileName);
+                var fdImage = crowdDocumentFolder.createFileDescriptorFromFile(cameraLoader.item.path);
 
                 console.log(">> cameraLoader.item.path "  + cameraLoader.item.path)
-                console.log(">> fd " + fd)
+                console.log(">> fdSound " + fdSound)
 
-                if (fd !== null)
+                if (fdSound !== null)
                 {
-                    console.log(">> fd.path " + fd.name)
+                    // ATTENTION REVOIRE CELA POUR LES DEVICE
+                    fdSound.name = "sounds/"+ fdImage.name.replace(".jpg",".wav")
+                    console.log(">> fdSound.path " + fdSound.name)
                     crowdDocumentFolder.localPath = "";
-                    currentFileDescriptor = fd;
-                    var result = crowdDocumentFolder.uploadFile(fd,cameraLoader.item.path)
+                    currentFileDescriptor = fdSound;
+                    var result = crowdDocumentFolder.uploadFile(fdSound,cameraLoader.item.audioTmpFileName)
                     console.log(">> result : " + result)
                 }
+
+
+                console.log(">> cameraLoader.item.path "  + cameraLoader.item.path)
+                console.log(">> fdImage " + fdImage)
+
+                if (fdImage !== null)
+                {
+                    console.log(">> fdImage.path " + fdImage.name)
+                    crowdDocumentFolder.localPath = "";
+                    currentFileDescriptor = fdImage;
+                    result = crowdDocumentFolder.uploadFile(fdImage,cameraLoader.item.path)
+                    console.log(">> result : " + result)
+                }
+
+
                 cameraLoader.item.close()
                 cameraLoader.sourceComponent = undefined
                 cameraLoader.visible = false

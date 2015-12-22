@@ -5,7 +5,7 @@
 *
 * Zeecrowd is an online collaboration platform [http://www.zeecrowd.com]
 *
-* ZcPostIt is free software: you can redistribute it and/or modify
+* TalkingWal is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation, either version 3 of the License, or
 * (at your option) any later version.
@@ -26,7 +26,7 @@ import QtQuick.Layouts 1.2
 import QtQuick.Dialogs 1.2
 
 import ZcClient 1.0 as Zc
-import "../Components" as PiComponents
+import "../Components" as TwComponents
 import QtMultimedia 5.4
 
 Zc.AppView
@@ -39,7 +39,10 @@ Zc.AppView
 
     property var currentFileDescriptor : null
 
-    PiComponents.ToolBar
+    property string _extensionSound : ".wav"
+    property string _extensionImage : ".jpg"
+
+    TwComponents.ToolBar
     {
         id : toolbarBoard
 
@@ -61,7 +64,13 @@ Zc.AppView
         }
     }
 
-    PiComponents.ActionList {
+    function getName(n)
+    {
+        return n.substring(0,n.lastIndexOf("_"))
+    }
+
+
+    TwComponents.ActionList {
         id: contextualMenu
 
         property var fileDescriptor : null
@@ -69,69 +78,13 @@ Zc.AppView
         Action {
             text: qsTr("Delete")
             onTriggered: {
-                console.log(">> contextualMenu.fileDescriptor " + contextualMenu.fileDescriptor)
-                crowdDocumentFolder.deleteFile(contextualMenu.fileDescriptor)
+
+                if (getName(fileDescriptor.name) === mainView.context.nickname) {
+                    console.log(">> contextualMenu.fileDescriptor " + contextualMenu.fileDescriptor)
+                    crowdDocumentFolder.deleteFile(contextualMenu.fileDescriptor)
+                }
             }
         }
-        Action {
-            text: qsTr("Play")
-            onTriggered: {
-                var name = contextualMenu.fileDescriptor.name;
-                console.log(">> name " + name)
-                var nameWav = contextualMenu.fileDescriptor.name.replace(".jpg",".wav");
-                console.log(">> nameWav " + nameWav)
-                var url = crowdDocumentFolder.getUrlFromFileName(name);
-                console.log(">> url " + url)
-                url = url.replace(name,"sounds/" + nameWav);
-                console.log(">> url to play " + url)
-
-                /*
-
-                var to = "";
-
-                if (Qt.platform.os  == "ios") {
-                    crowdDocumentFolder.localPath = Zc.HostInfo.writableLocation(7) //+ "/listen.wav";
-                } else if (Qt.platform.os  == "android") {
-                    crowdDocumentFolder.localPath =  Zc.HostInfo.writableLocation(4) //+ "/listen.wav";
-                } else {
-                    crowdDocumentFolder.localPath = Zc.HostInfo.writableLocation(7) //+ "/listen.wav";
-                }
-                var fd = crowdDocumentFolder.getFileDescriptor(contextualMenu.fileDescriptor.name,false)
-                documentFolderId.ensureLocalPathExists("sounds");
-                console.log('>> fd ' + fd)
-                fd.name = "sounds/" +nameWav;
-
-                crowdDocumentFolder
-
-                var res = crowdDocumentFolder.downloadFileTo(fd,to);
-
-                console.log(">> res " + res)
-                playMusic.source = url;
-
-            //    playMusic.source = "http://www.wavsource.com/snds_2015-12-13_4694675918641206/movie_stars/bogart/down_to_cases.wav"
-
-                playMusic.play();
-                */
-
-                var to = "";
-
-                if (Qt.platform.os  == "ios") {
-                    to = Zc.HostInfo.writableLocation(7) + "/listen.wav";
-                } else if (Qt.platform.os  == "android") {
-                    to  =  Zc.HostInfo.writableLocation(4) + "/listen.wav";
-                } else {
-                    to = Zc.HostInfo.writableLocation(7) + "/listen.wav";
-                }
-
-                console.log(">> to ")
-
-                var result =  crowdSharedResource.downloadFileTo("sounds/" + nameWav,to,downloadFileQueryId);
-
-                console.log(">> result " + result)
-
-            }
-        }
-
     }
 
     menuActions :
@@ -142,9 +95,10 @@ Zc.AppView
             onTriggered:
             {
                 Qt.inputMethod.hide();
-                mainView.closeTask();
+                mainView.close();
             }
         }
+        /*
         ,
         Action {
             id: recordAction
@@ -202,7 +156,7 @@ Zc.AppView
                 audioRecorder.outputFileLocation = audioTmpFileName
                 audioRecorder.clear()
             }
-        }
+        }*/
         ,
         Action {
             id: addNew
@@ -216,11 +170,45 @@ Zc.AppView
     ]
 
 
-    function generateId()
-    {
-        var d = new Date();
-        return mainView.context.nickname + "|" + d.toLocaleDateString() + "_" + d.toLocaleTimeString() + " " + d.getMilliseconds();
+    function playSound(fileDescriptor) {
+        busyIndicator.title = "Playing"
+        busyIndicator.running = true
+
+        var name = fileDescriptor.name;
+        console.log(">> name " + name)
+        var nameWav = fileDescriptor.name.replace(_extensionImage,_extensionSound);
+        console.log(">> nameWav " + nameWav)
+        var url = crowdDocumentFolder.getUrlFromFileName(name);
+        console.log(">> url " + url)
+        url = url.replace(name,"sounds/" + nameWav);
+        console.log(">> url to play " + url)
+
+        var to = "";
+
+        if (Qt.platform.os  == "ios") {
+            to = Zc.HostInfo.writableLocation(7) + "/listen.wav";
+        } else if (Qt.platform.os  == "android") {
+            to  =  Zc.HostInfo.writableLocation(4) + "/listen.wav";
+        } else {
+            to = Zc.HostInfo.writableLocation(7) + "/listen.wav";
+        }
+
+        playMusicLoader.sourceComponent = undefined
+
+        crowdDocumentFolder.localPath = "";
+        var result = crowdDocumentFolder.removeLocalFile(to);
+
+        console.log(">> delete file " + to)
+        console.log(">> result delete file " + result)
+
+
+        result = crowdSharedResource.downloadFileTo("sounds/" + nameWav,to,downloadFileQueryId);
+
+        console.log(">> result " + result)
+
+
     }
+
 
     Zc.AudioRecorder {
 
@@ -238,12 +226,22 @@ Zc.AppView
         }
     }
 
-    Audio {
-        id: playMusic
-        onStopped: {
-            console.log(">> on stopped")
-            source =  ""
+
+    Component {
+
+        id : playMusicComponent
+
+        Audio {
+            id: playMusic
+            onStopped: {
+                playMusicLoader.sourceComponent = undefined
+                busyIndicator.running = false
+            }
         }
+    }
+
+    Loader {
+        id : playMusicLoader
     }
 
     Zc.CrowdActivity
@@ -317,19 +315,20 @@ Zc.AppView
                         to = Zc.HostInfo.writableLocation(7) + "/listen.wav";
                     }
 
+                    playMusicLoader.sourceComponent = playMusicComponent
+
                     if (Qt.platform.os  == "ios") {
-                        playMusic.source = "file:/" + to
+                        playMusicLoader.item.source = "file:/" + to
                     } else if (Qt.platform.os  == "android") {
-                        playMusic.source = "file://" + to
+                        playMusicLoader.item.source = "file://" + to
                     } else {
-                        playMusic.source = to
+                        playMusicLoader.item.source = to
                     }
 
+                    playMusicLoader.item.source = to
+                    console.log(">> playMusic.source " + playMusicLoader.item.source)
 
-                    playMusic.source = to
-                    console.log(">> playMusic.source " + playMusic.source)
-
-                    playMusic.play()
+                    playMusicLoader.item.play()
 
 
                 }
@@ -352,11 +351,12 @@ Zc.AppView
                 onErrorOccured :
                 {
                     console.log(">> ERRROR OCCURED")
+                    busyIndicator.running = false
                 }
 
                 onCompleted :
                 {
-
+                    busyIndicator.running = false
                     console.log(">> crowdDocumentFolder.count " + crowdDocumentFolder.count)
                 }
             }
@@ -378,6 +378,11 @@ Zc.AppView
 
 
             onFileUploaded : {
+
+                // on ne prend pas en compte les les fichiers son dans la notification
+                if (fileName.indexOf(_extensionSound) !== -1)
+                    return;
+
                 appNotification.logEvent(Zc.AppNotification.Add,"File",fileName,"image://icons/" + "file:///" + fileName)
                 notifySender.sendMessage("","{ \"action\" : \"added\" , \"fileName\" : \"" + fileName + "\" , \"lastModified\" : \"" + currentFileDescriptor.timeStamp + "\" }");
             }
@@ -420,74 +425,9 @@ Zc.AppView
         cellWidth: Zc.AppStyleSheet.adjustSubdivisionSizeX(width, 2, -1, 1.5)
         cellHeight: cellWidth*5/4
         clip: true
-        delegate: /*CrowdDelegate {
-            iconUrl: crowdModel === null
-                ? ""
-                : rootObject.host.services.crowdService
-                    .getCrowdResourceUrl(crowdModel, "icon.png")
+        delegate:
+            TWDelegate{
 
-            onPressAndHold: showContextMenu(crowdModel)
-
-            onClicked: {
-                if (!crowdModel.crowdDestroyed) {
-                    rootObject.services.viewService.showCrowdPage(crowdModel);
-                } else {
-                    crowds.leaveADestroyedCrowd(crowdModel)
-                }
-            }*/
-                  Item{
-            width: GridView.view.cellWidth - 2
-            height: GridView.view.cellHeight - 2
-            Rectangle {
-                anchors.fill: parent
-                color : "lightgrey"
-            }
-
-            Image {
-                id : imageId
-                source : crowdDocumentFolder.getUrlFromFileName(name);
-                fillMode: Image.PreserveAspectFit
-                anchors.fill: parent
-                onStatusChanged:
-                {
-                    if (status != Image.Error )
-                    {
-                        messageTextId.visible = false
-                        messageTextId.text = "";
-                    }
-                    else
-                    {
-                        messageTextId.visible = false
-                        messageTextId.text = "Error"
-                    }
-
-                }
-
-                onProgressChanged:
-                {
-                    if ( status === Image.Loading)
-                    {
-                        messageTextId.text = Math.round(imageId.progress * 100) + "%"
-                        messageTextId.visible = true
-                    }
-                }
-                Text
-                {
-                    id : messageTextId
-                    anchors.centerIn : parent
-                    color : "black"
-                    text : "Loading ..."
-                }
-                MouseArea {
-                    anchors.fill: parent
-
-                    onClicked: {
-                        contextualMenu.fileDescriptor = item
-                        contextualMenu.show()
-                    }
-                }
-
-            }
         }
     }
 
@@ -506,34 +446,44 @@ Zc.AppView
             id : cameraView
             visible : false
 
-            onValidated : {
-                var fdSound = crowdDocumentFolder.createFileDescriptorFromFile(cameraLoader.item.audioTmpFileName);
-                var fdImage = crowdDocumentFolder.createFileDescriptorFromFile(cameraLoader.item.path);
+            onCanceled : {
+                cameraLoader.item.close()
+                cameraLoader.sourceComponent = undefined
+                cameraLoader.visible = false
+            }
 
-                console.log(">> cameraLoader.item.path "  + cameraLoader.item.path)
-                console.log(">> fdSound " + fdSound)
+            onValidated : {
+
+                console.log(">>> A que coucou")
+
+                var fdSound = crowdDocumentFolder.createFileDescriptorFromFile(cameraLoader.item.audioTmpFileName);
+                var fdImage = crowdDocumentFolder.createFileDescriptorFromFile(cameraLoader.item.photoTmpFileName);
+
+                var d = new Date();
+                var fileNameId = mainView.context.nickname + "_" + d.getTime();
 
                 if (fdSound !== null)
                 {
                     // ATTENTION REVOIRE CELA POUR LES DEVICE
-                    fdSound.name = "sounds/"+ fdImage.name.replace(".jpg",".wav")
-                    console.log(">> fdSound.path " + fdSound.name)
+                    fdSound.name = "sounds/"+ fileNameId + mainView._extensionSound
+                    console.log(">> fdSound.name " + fdSound.name)
                     crowdDocumentFolder.localPath = "";
                     currentFileDescriptor = fdSound;
                     var result = crowdDocumentFolder.uploadFile(fdSound,cameraLoader.item.audioTmpFileName)
                     console.log(">> result : " + result)
                 }
 
-
-                console.log(">> cameraLoader.item.path "  + cameraLoader.item.path)
-                console.log(">> fdImage " + fdImage)
+                console.log(">> cameraLoader.item.path "  + cameraLoader.item.photoTmpFileName)
+                console.log(">> fdImage.name before " + fdImage.name)
 
                 if (fdImage !== null)
                 {
-                    console.log(">> fdImage.path " + fdImage.name)
+                    fdImage.name = fileNameId + _extensionImage
+
+                    console.log(">> fdImage.name after " + fdImage.name)
                     crowdDocumentFolder.localPath = "";
                     currentFileDescriptor = fdImage;
-                    result = crowdDocumentFolder.uploadFile(fdImage,cameraLoader.item.path)
+                    result = crowdDocumentFolder.uploadFile(fdImage,cameraLoader.item.photoTmpFileName)
                     console.log(">> result : " + result)
                 }
 
@@ -545,18 +495,16 @@ Zc.AppView
         }
     }
 
+
+
+
     onLoaded : {
         activity.start();
 
-        if (Qt.platform.os  == "ios") {
-            audioTmpFileName = Zc.HostInfo.writableLocation(7) + "/audio.wav";
-        } else if (Qt.platform.os  == "android") {
-            audioTmpFileName = Zc.HostInfo.writableLocation(4) + "/audio";
-        } else {
-            audioTmpFileName = Zc.HostInfo.writableLocation(7) + "/audio.wav";
-        }
+        //audioTmpFileName = generateTemporaryAudioFileName();
 
-        console.log(">> audioTmpFileName " + audioTmpFileName)
+
+        //console.log(">> audioTmpFileName " + audioTmpFileName)
         /* textArea.text = textArea.text + ">> audioTmpFileName " + audioTmpFileName  + "\n"
         textArea.text = textArea.text + "-------------------------\n"
         textArea.text = textArea.text + "Zc.HostInfo.writableLocation(0)" + Zc.HostInfo.writableLocation(0) + "\n"
@@ -568,14 +516,20 @@ Zc.AppView
         textArea.text = textArea.text + "Zc.HostInfo.writableLocation(6)" + Zc.HostInfo.writableLocation(6) + "\n"
         textArea.text = textArea.text + "Zc.HostInfo.writableLocation(7)" + Zc.HostInfo.writableLocation(7) + "\n"
         textArea.text = textArea.text + "Zc.HostInfo.writableLocation(8)" + Zc.HostInfo.writableLocation(8) + "\n"
-        textArea.text = textArea.text + "Zc.HostInfo.writableLocation(9)" + Zc.HostInfo.writableLocation(9) + "\n"*/
-
-
-        console.log(">> crowdDocumentFolder.files.count " + crowdDocumentFolder.files.count)
+        textArea.text = textArea.text + "Zc.HostInfo.writableLocation(9)" + Zc.HostInfo.writableLocation(9) + "\n"
+*/
 
     }
 
     onClosed : {
         activity.stop();
+    }
+
+    TwComponents.BusyIndicator
+    {
+        id : busyIndicator
+        running: true
+        title : "Loading"
+
     }
 }

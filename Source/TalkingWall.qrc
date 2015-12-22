@@ -7,5 +7,9 @@
         <file>Components/ActionList.qml</file>
         <file>Packages/TalkingWall.cfg</file>
         <file>Views/CameraView.qml</file>
+        <file>Components/BusyIndicator.qml</file>
+        <file>Components/BusyIndicatorStyle.qml</file>
+        <file>Resources/busy-indicator.png</file>
+        <file>Views/TWDelegate.qml</file>
     </qresource>
 </RCC>

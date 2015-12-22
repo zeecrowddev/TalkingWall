@@ -14,4 +14,7 @@ RESOURCES += \
     ../../Source/TalkingWall.qrc
 
 DISTFILES += \
-    ../../Source/Views/CameraView.qml
+    ../../Source/Views/CameraView.qml \
+    ../../Source/Components/BusyIndicator.qml \
+    ../../Source/Components/BusyIndicatorStyle.qml \
+    ../../Source/Views/TWDelegate.qml

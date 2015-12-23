@@ -51,5 +51,7 @@ Button {
             verticalAlignment: Text.AlignVCenter
             color: "#448"
         }
+
+
     }
 }

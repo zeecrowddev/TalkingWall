@@ -24,7 +24,6 @@ Item {
     signal validated();
     signal canceled();
 
-
     // selon le device le repertoire temporarire et nom (extensio ndu fichier change)
     function generateTemporaryAudioFileName() {
         if (Qt.platform.os  == "ios") {
@@ -253,8 +252,12 @@ Item {
 
     ProgressBar {
         id : progressBarId
-        anchors.verticalCenter: parent.verticalCenter
-        width : parent.width
+
+        style: TwComponents.ProgressBarStyle {}
+
+        anchors.centerIn: parent
+        width : Zc.AppStyleSheet.width(1.2)
+        height : Zc.AppStyleSheet.width(0.3)
         minimumValue: 0
         maximumValue: 20
         visible : false

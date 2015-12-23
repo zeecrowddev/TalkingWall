@@ -42,27 +42,6 @@ Zc.AppView
     property string _extensionSound : ".wav"
     property string _extensionImage : ".jpg"
 
-    TwComponents.ToolBar
-    {
-        id : toolbarBoard
-
-        anchors {
-            right: parent.right
-            left: parent.left
-            top: parent.top
-            topMargin : 1
-        }
-
-        Row {
-            id : toolBarId
-            anchors.fill: parent
-
-            ToolButton {
-                onClicked: {
-                }
-            }
-        }
-    }
 
     function getName(n)
     {
@@ -162,6 +141,7 @@ Zc.AppView
             id: addNew
             text:  "Add"
             onTriggered: {
+                mainToolBar.visible = false
                 cameraLoader.visible = true
                 cameraLoader.sourceComponent = cameraViewComponent
                 cameraLoader.item.open()
@@ -242,6 +222,7 @@ Zc.AppView
 
     Loader {
         id : playMusicLoader
+        anchors.fill: parent
     }
 
     Zc.CrowdActivity
@@ -383,8 +364,10 @@ Zc.AppView
                 if (fileName.indexOf(_extensionSound) !== -1)
                     return;
 
-                appNotification.logEvent(Zc.AppNotification.Add,"File",fileName,"image://icons/" + "file:///" + fileName)
-                notifySender.sendMessage("","{ \"action\" : \"added\" , \"fileName\" : \"" + fileName + "\" , \"lastModified\" : \"" + currentFileDescriptor.timeStamp + "\" }");
+                if (fileName.indexOf(_extensionSound) === -1) {
+                    appNotification.logEvent(Zc.AppNotification.Add,"File",fileName,"image://icons/" + "file:///" + fileName)
+                    notifySender.sendMessage("","{ \"action\" : \"added\" , \"fileName\" : \"" + fileName + "\" , \"lastModified\" : \"" + currentFileDescriptor.timeStamp + "\" }");
+                }
             }
 
             onFileDeleted : {
@@ -450,6 +433,7 @@ Zc.AppView
                 cameraLoader.item.close()
                 cameraLoader.sourceComponent = undefined
                 cameraLoader.visible = false
+                mainToolBar.visible = true
             }
 
             onValidated : {
@@ -491,10 +475,39 @@ Zc.AppView
                 cameraLoader.item.close()
                 cameraLoader.sourceComponent = undefined
                 cameraLoader.visible = false
+                mainToolBar.visible = true
             }
         }
     }
 
+
+    TwComponents.ToolBar
+    {
+
+        id : mainToolBar
+
+        anchors {
+            right: parent.right
+            left: parent.left
+            bottom: parent.bottom
+            topMargin : 1
+        }
+
+        RowLayout {
+            anchors.fill: parent
+
+            TwComponents.ToolButton {
+                text: qsTr("Add New")
+                Layout.alignment: Qt.AlignCenter
+                onClicked: {
+                    mainToolBar.visible = false
+                    cameraLoader.visible = true
+                    cameraLoader.sourceComponent = cameraViewComponent
+                    cameraLoader.item.open()
+                }
+            }
+        }
+    }
 
 
 

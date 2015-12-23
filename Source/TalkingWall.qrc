@@ -11,5 +11,8 @@
         <file>Components/BusyIndicatorStyle.qml</file>
         <file>Resources/busy-indicator.png</file>
         <file>Views/TWDelegate.qml</file>
+        <file>Components/ProgressBarStyle.qml</file>
+        <file>Resources/sound.jpg</file>
+        <file>Resources/camera.png</file>
     </qresource>
 </RCC>

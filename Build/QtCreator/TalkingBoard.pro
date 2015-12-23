@@ -17,4 +17,5 @@ DISTFILES += \
     ../../Source/Views/CameraView.qml \
     ../../Source/Components/BusyIndicator.qml \
     ../../Source/Components/BusyIndicatorStyle.qml \
-    ../../Source/Views/TWDelegate.qml
+    ../../Source/Views/TWDelegate.qml \
+    ../../Source/Components/ProgressBarStyle.qml

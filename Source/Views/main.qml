@@ -48,6 +48,11 @@ Zc.AppView
         return n.substring(0,n.lastIndexOf("_"))
     }
 
+    function getNumber(n)
+    {
+        return parseInt(n.substring(n.lastIndexOf("_")+1,n.length-1))
+    }
+
 
     TwComponents.ActionList {
         id: contextualMenu
@@ -188,6 +193,22 @@ Zc.AppView
 
 
     }
+
+    Zc.SortFilterObjectListModel
+    {
+        id : sortFilterObjectListModel
+    }
+
+    Zc.JavaScriptSorter
+    {
+        id : javaScriptSorter
+
+        function lessThan(left,right)
+        {
+            return getNumber(left.name) > getNumber(right.name);
+        }
+    }
+
 
 
     Zc.AudioRecorder {
@@ -378,7 +399,12 @@ Zc.AppView
 
         onStarted :
         {
-            grid.model = crowdDocumentFolder.files
+
+            sortFilterObjectListModel.setModel(crowdDocumentFolder.files);
+            javaScriptSorter.qmlObjectSorter = javaScriptSorter;
+            sortFilterObjectListModel.setSorter(javaScriptSorter);
+
+            grid.model = sortFilterObjectListModel
             crowdDocumentFolder.loadRemoteFiles(documentFolderQueryStatus);
         }
     }

@@ -63,7 +63,7 @@ Zc.AppView
             text: qsTr("Delete")
             onTriggered: {
 
-                if (getName(fileDescriptor.name) === mainView.context.nickname) {
+                if (getName(contextualMenu.fileDescriptor.name) === mainView.context.nickname) {
                     console.log(">> contextualMenu.fileDescriptor " + contextualMenu.fileDescriptor)
                     crowdDocumentFolder.deleteFile(contextualMenu.fileDescriptor)
                 }

@@ -66,7 +66,9 @@ Item {
         audioRecorder.stop();
         button1Id.visible = true
         button2Id.text = qsTr("Play")
+        button2Id.isFlip = false
         button3Id.visible = true
+
     }
 
     function record() {
@@ -188,6 +190,7 @@ Item {
 
                     console.log(">> imageSource " + imageSource)
 
+                    /*
 
                     if (camera.orientation != videoOutput.orientation)
                     {
@@ -197,6 +200,7 @@ Item {
                      {
                         photoPreview.rotation = 0
                     }
+                    */
 
                     photoPreview.source = imageSource
 
@@ -220,8 +224,8 @@ Item {
             focus : visible // to receive focus and capture key events when visible
             fillMode:  VideoOutput.PreserveAspectCrop
 
-            autoOrientation : true
-
+            //autoOrientation : true
+            autoOrientation : false
 
         }
     }
@@ -318,11 +322,14 @@ Item {
             }
             TwComponents.ToolButton {
                 id : button2Id
+                property bool isFlip : true
                 text: qsTr("Flip Camera")
                 Layout.alignment: Qt.AlignCenter
                 onClicked: {
-                    cameraView.flipCamera()
-
+                    if (isFlip) {
+                        cameraView.flipCamera();
+                        return;
+                    }
                     if (Qt.platform.os  == "ios") {
                         playMusic.source = "file:/" + audioTmpFileName
                     } else if (Qt.platform.os  == "android") {
@@ -330,6 +337,8 @@ Item {
                     } else {
                         playMusic.source = audioTmpFileName
                     }
+
+                    console.log(">> playMusic.source " + playMusic.source)
 
                     playMusic.play()
                 }

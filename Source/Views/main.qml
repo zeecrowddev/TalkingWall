@@ -310,7 +310,7 @@ Zc.AppView
                     var to = "";
 
                     if (Qt.platform.os  == "ios") {
-                        to = Zc.HostInfo.writableLocation(7) + "/listen.wav";
+                        to = Zc.HostInfo.writableLocation(7) + "listen.wav";
                     } else if (Qt.platform.os  == "android") {
                         to  =  Zc.HostInfo.writableLocation(4) + "/listen.wav";
                     } else {
@@ -327,7 +327,8 @@ Zc.AppView
                         playMusicLoader.item.source = to
                     }
 
-                    playMusicLoader.item.source = to
+                    //console.log(">> to " + to)
+                    //playMusicLoader.item.source = to
                     console.log(">> playMusic.source " + playMusicLoader.item.source)
 
                     playMusicLoader.item.play()

@@ -14,5 +14,7 @@
         <file>Components/ProgressBarStyle.qml</file>
         <file>Resources/sound.jpg</file>
         <file>Resources/camera.png</file>
+        <file>Components/Alert.qml</file>
+        <file>Components/AlertButtonStyle.qml</file>
     </qresource>
 </RCC>

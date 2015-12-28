@@ -82,6 +82,16 @@ Zc.AppView
                 mainView.close();
             }
         }
+        /*,
+        Action {
+            id: infoAction
+            text:  "Info"
+            onTriggered:
+            {
+                info.text = "";
+                info.visible = true
+            }
+        }*/
         /*
         ,
         Action {
@@ -237,6 +247,12 @@ Zc.AppView
             onStopped: {
                 playMusicLoader.sourceComponent = undefined
                 busyIndicator.running = false
+            }
+            onError: {
+                playMusicLoader.sourceComponent = undefined
+                busyIndicator.running = false
+                errorId.message = qsTr(errorString) + "\n" + "Codec : " + playMusic.metaData.audioCodec;
+                errorId.show();
             }
         }
     }
@@ -467,7 +483,13 @@ Zc.AppView
 
                 console.log(">>> A que coucou")
 
-                var fdSound = crowdDocumentFolder.createFileDescriptorFromFile(cameraLoader.item.audioTmpFileName);
+
+                var audioTmpFileName = cameraLoader.item.audioTmpFileName;
+                if (Qt.platform.os === "android") {
+                    audioTmpFileName += ".mp4"
+                }
+
+                var fdSound = crowdDocumentFolder.createFileDescriptorFromFile(audioTmpFileName);
                 var fdImage = crowdDocumentFolder.createFileDescriptorFromFile(cameraLoader.item.photoTmpFileName);
 
                 var d = new Date();
@@ -480,7 +502,8 @@ Zc.AppView
                     console.log(">> fdSound.name " + fdSound.name)
                     crowdDocumentFolder.localPath = "";
                     currentFileDescriptor = fdSound;
-                    var result = crowdDocumentFolder.uploadFile(fdSound,cameraLoader.item.audioTmpFileName)
+
+                    var result = crowdDocumentFolder.uploadFile(fdSound,audioTmpFileName)
                     console.log(">> result : " + result)
                 }
 
@@ -540,25 +563,6 @@ Zc.AppView
 
     onLoaded : {
         activity.start();
-
-        //audioTmpFileName = generateTemporaryAudioFileName();
-
-
-        //console.log(">> audioTmpFileName " + audioTmpFileName)
-        /* textArea.text = textArea.text + ">> audioTmpFileName " + audioTmpFileName  + "\n"
-        textArea.text = textArea.text + "-------------------------\n"
-        textArea.text = textArea.text + "Zc.HostInfo.writableLocation(0)" + Zc.HostInfo.writableLocation(0) + "\n"
-        textArea.text = textArea.text + "Zc.HostInfo.writableLocation(1)" + Zc.HostInfo.writableLocation(1) + "\n"
-        textArea.text = textArea.text + "Zc.HostInfo.writableLocation(2)" + Zc.HostInfo.writableLocation(2) + "\n"
-        textArea.text = textArea.text + "Zc.HostInfo.writableLocation(3)" + Zc.HostInfo.writableLocation(3) + "\n"
-        textArea.text = textArea.text + "Zc.HostInfo.writableLocation(4)" + Zc.HostInfo.writableLocation(4) + "\n"
-        textArea.text = textArea.text + "Zc.HostInfo.writableLocation(5)" + Zc.HostInfo.writableLocation(5) + "\n"
-        textArea.text = textArea.text + "Zc.HostInfo.writableLocation(6)" + Zc.HostInfo.writableLocation(6) + "\n"
-        textArea.text = textArea.text + "Zc.HostInfo.writableLocation(7)" + Zc.HostInfo.writableLocation(7) + "\n"
-        textArea.text = textArea.text + "Zc.HostInfo.writableLocation(8)" + Zc.HostInfo.writableLocation(8) + "\n"
-        textArea.text = textArea.text + "Zc.HostInfo.writableLocation(9)" + Zc.HostInfo.writableLocation(9) + "\n"
-*/
-
     }
 
     onClosed : {
@@ -572,4 +576,19 @@ Zc.AppView
         title : "Loading"
 
     }
+
+    TwComponents.Alert {
+        id: errorId
+        title: qsTr("Failed to play the sound")
+        button2: qsTr("Ok")
+    }
+
+/*
+    TextArea {
+        id : info
+        anchors.fill: parent
+        visible : false
+    }
+    */
+
 }

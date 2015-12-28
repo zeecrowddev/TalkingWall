@@ -63,16 +63,26 @@ Item {
     }
 
     function stopRecord() {
+        progressBarId.visible = false
         audioRecorder.stop();
         button1Id.visible = true
         button2Id.text = qsTr("Play")
         button2Id.isFlip = false
         button3Id.visible = true
-
     }
 
     function record() {
         audioRecorder.outputFileLocation = audioTmpFileName
+
+        /*
+        if (audioRecorder.codec !== undefined) {
+            button1Id.text = "Codec Ok"
+            audioRecorder.codec = "audio/amr-nb";
+            /*if (audioRecorder.sampleRate !== undefined) {
+                audioRecorder.sampleRate = 9600
+            }*/
+        //}
+
         progressBarId.visible = true;
         //buttonRecord.visible = false
         timerId.start();
@@ -285,8 +295,6 @@ Item {
         }
 
         onReleased: {
-            progressBarId.visible = false
-            timerId.stop();
             stopRecord();
             mouseArea.enabled = false;
         }
@@ -333,12 +341,13 @@ Item {
                     if (Qt.platform.os  == "ios") {
                         playMusic.source = "file:/" + audioTmpFileName
                     } else if (Qt.platform.os  == "android") {
-                        playMusic.source = "file://" + audioTmpFileName
+                        playMusic.source = "file://" + audioTmpFileName + ".mp4"
                     } else {
                         playMusic.source = audioTmpFileName
                     }
 
                     console.log(">> playMusic.source " + playMusic.source)
+                    //button2Id.text = playMusic.source;
 
                     playMusic.play()
                 }

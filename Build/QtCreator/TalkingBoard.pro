@@ -18,4 +18,6 @@ DISTFILES += \
     ../../Source/Components/BusyIndicator.qml \
     ../../Source/Components/BusyIndicatorStyle.qml \
     ../../Source/Views/TWDelegate.qml \
-    ../../Source/Components/ProgressBarStyle.qml
+    ../../Source/Components/ProgressBarStyle.qml \
+    ../../Source/Components/Alert.qml \
+    ../../Source/Components/AlertButtonStyle.qml

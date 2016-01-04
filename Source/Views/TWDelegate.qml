@@ -100,7 +100,7 @@ Item{
             elide : Text.ElideRight
             horizontalAlignment : Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
-            font.pixelSize: Zc.AppStyleSheet.height(0.18)
+            font.pixelSize: height*0.8
         }
 
         Text {
@@ -114,7 +114,7 @@ Item{
             elide : Text.ElideRight
             horizontalAlignment : Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
-            font.pixelSize: Zc.AppStyleSheet.height(0.10)
+            font.pixelSize: height*0.5
         }
     }
 }

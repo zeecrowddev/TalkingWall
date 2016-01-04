@@ -31,65 +31,60 @@ Item{
     id : twDelegate
     width: GridView.view.cellWidth - 2
     height: GridView.view.cellHeight - 2
+
     Rectangle {
         anchors.fill: parent
         color : "lightgrey"
     }
 
-
-    Column
-    {
+    Column {
         anchors.fill: parent
 
         Image {
-            id : imageId
-            source : crowdDocumentFolder.getUrlFromFileName(name);
+            id: imageId
+            source: crowdDocumentFolder.getUrlFromFileName(name)
 
             fillMode: Image.PreserveAspectFit
 
             height: width
             width : parent.width
 
-            onStatusChanged:
-            {
-                if (status != Image.Error )
-                {
-                    messageTextId.visible = false
+            onStatusChanged: {
+                console.log("status: " + status);
+                if (status !== Image.Error ) {
+                    messageTextId.visible = false;
                     messageTextId.text = "";
                 }
-                else
-                {
-                    messageTextId.visible = false
-                    messageTextId.text = "Error"
-                }
-
-            }
-
-            onProgressChanged:
-            {
-                if ( status === Image.Loading)
-                {
-                    messageTextId.text = Math.round(imageId.progress * 100) + "%"
-                    messageTextId.visible = true
+                else {
+                    messageTextId.visible = false;
+                    messageTextId.text = "Error";
                 }
             }
-            Text
-            {
+
+            onProgressChanged: {
+                if ( status === Image.Loading) {
+                    messageTextId.text = Math.round(imageId.progress * 100) + "%";
+                    messageTextId.visible = true;
+                }
+            }
+
+            Text {
                 id : messageTextId
                 anchors.centerIn : parent
                 color : "black"
-                text : "Loading ..."
+                text : qsTr("Loading...")
             }
+
             MouseArea {
                 anchors.fill: parent
 
                 onPressAndHold: {
-                    contextualMenu.fileDescriptor = item
-                    contextualMenu.show()
+                    contextualMenu.fileDescriptor = item;
+                    contextualMenu.show();
                 }
 
                 onClicked: {
-                    mainView.playSound(item)
+                    mainView.playSound(item);
                 }
             }
         }
@@ -123,4 +118,3 @@ Item{
         }
     }
 }
-

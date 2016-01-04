@@ -5,6 +5,7 @@ import QtQuick.Controls 1.3
 import QtQuick.Controls.Styles 1.4
 import QtQuick.Layouts 1.2
 import QtMultimedia 5.5
+
 import "../Components" as TwComponents
 
 import ZcClient 1.0 as Zc
@@ -36,7 +37,7 @@ Item {
     }
 
     Component.onCompleted: {
-        camera.stop()
+        camera.stop();
         audioTmpFileName = generateTemporaryAudioFileName();
     }
 
@@ -45,13 +46,13 @@ Item {
     }
 
     function open() {
-        visible = true
+        visible = true;
         camera.start();
     }
 
     function close() {
-        visible = false
-        camera.stop()
+        visible = false;
+        camera.stop();
     }
 
     function flipCamera() {
@@ -63,16 +64,16 @@ Item {
     }
 
     function stopRecord() {
-        progressBarId.visible = false
+        progressBarId.visible = false;
         audioRecorder.stop();
-        button1Id.visible = true
+        button1Id.visible = true;
         button2Id.text = qsTr("Play")
         button2Id.isFlip = false
         button3Id.visible = true
     }
 
     function record() {
-        audioRecorder.outputFileLocation = audioTmpFileName
+        audioRecorder.outputFileLocation = audioTmpFileName;
 
         /*
         if (audioRecorder.codec !== undefined) {
@@ -89,19 +90,16 @@ Item {
         audioRecorder.record();
     }
 
-    Zc.Image
-    {
-        id : imageId
+    Zc.Image {
+        id: imageId
     }
 
-    Zc.Image
-    {
-        id : imageDestId
+    Zc.Image {
+        id: imageDestId
     }
 
     Zc.AudioRecorder {
-
-        id : audioRecorder
+        id: audioRecorder
     }
 
     Timer {
@@ -131,9 +129,8 @@ Item {
         color : "white"
     }
 
-    Item
-    {
-        id : cameraViewer
+    Item {
+        id: cameraViewer
 
         anchors{
             top : parent.top
@@ -142,8 +139,7 @@ Item {
             bottom : toolbarBoard.top
         }
 
-        Camera
-        {
+        Camera {
             id: camera
 
             imageProcessing.whiteBalanceMode: CameraImageProcessing.WhiteBalanceFlash
@@ -156,13 +152,12 @@ Item {
 
             imageCapture {
 
-                onImageSaved:
-                {
-                    cameraViewer.visible = false
-                    photoPreview.visible = true
+                onImageSaved: {
+                    cameraViewer.visible = false;
+                    photoPreview.visible = true;
 
                     var resultLoad = imageId.load(camera.imageCapture.capturedImagePath);
-                    console.log("ResultLoad " + resultLoad )
+                    console.log("ResultLoad " + resultLoad );
 
                     if (imageId.width > imageId.height) {
                         var x = (imageId.width - imageId.height) /2;
@@ -170,8 +165,8 @@ Item {
                         var width = imageId.height;
                         var height = imageId.height;
                         imageId.copyTo(imageDestId,x,y,width,height);
-                    } else {
-
+                    }
+                    else {
                         var y = (imageId.height - imageId.width) / 2;
                         var x = 0;
                         var width = imageId.width;
@@ -184,21 +179,21 @@ Item {
                     var imageSource = cameraView.photoTmpFileName;
                     if (Qt.platform.os === "windows" && cameraView.photoTmpFileName.search("file:///") === -1)
                     {
-                        imageSource = "file:///" + photoTmpFileName
+                        imageSource = "file:///" + photoTmpFileName;
                     }
                     else if (Qt.platform.os === "ios")
                     {
-                        imageSource = "file:/" + photoTmpFileName
+                        imageSource = "file:/" + photoTmpFileName;
                     }
                     else if (Qt.platform.os === "android")
                     {
-                        imageSource = "file://" + cameraView.photoTmpFileName
+                        imageSource = "file://" + cameraView.photoTmpFileName;
                     }
                     else {
-                        imageSource = cameraView.photoTmpFileName
+                        imageSource = cameraView.photoTmpFileName;
                     }
 
-                    console.log(">> imageSource " + imageSource)
+                    console.log(">> imageSource " + imageSource);
 
                     /*
 
@@ -212,7 +207,7 @@ Item {
                     }
                     */
 
-                    photoPreview.source = imageSource
+                    photoPreview.source = imageSource;
 
                     readyToSave = true;
                     camera.stop();
@@ -236,12 +231,10 @@ Item {
 
             //autoOrientation : true
             autoOrientation : false
-
         }
     }
 
-    Image
-    {
+    Image {
         id: photoPreview
         anchors.centerIn: parent
 
@@ -277,8 +270,7 @@ Item {
         visible : false
     }
 
-    MouseArea
-    {
+    MouseArea {
         id : mouseArea
 
         anchors {
@@ -304,8 +296,7 @@ Item {
         id: playMusic
     }
 
-    TwComponents.ToolBar
-    {
+    TwComponents.ToolBar {
         id : toolbarBoard
 
         anchors {
@@ -328,6 +319,7 @@ Item {
                     cameraView.canceled();
                 }
             }
+
             TwComponents.ToolButton {
                 id : button2Id
                 property bool isFlip : true
@@ -352,6 +344,7 @@ Item {
                     playMusic.play()
                 }
             }
+
             TwComponents.ToolButton {
                 id : button3Id
                 visible : false
@@ -363,5 +356,4 @@ Item {
             }
         }
     }
-
 }

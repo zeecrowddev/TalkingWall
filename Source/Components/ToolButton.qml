@@ -32,14 +32,21 @@ import ZcClient 1.0 as Zc
 Button {
     id: button
 
+    property color backgroundColor: "white"
+    property color backgroundColorPressed: "lightgrey"
+    property color borderColor: "white"
+    property color borderColorPressed: "#448"
+    property int borderRadius: 6
+    property color textColor: "#448"
+
     style: ButtonStyle {
         background: Rectangle {
             //implicitWidth:  appStyleSheet.width(0.3)
             implicitHeight: Zc.AppStyleSheet.height(0.13) * 1.2
             border.width: 2
-            border.color: control.pressed ? "#448": "white"
-            radius: 6
-            color: control.pressed ? "lightgrey" : "white"
+            border.color: control.pressed ? button.borderColorPressed : button.borderColor
+            radius: button.borderRadius
+            color: control.pressed ? button.backgroundColorPressed : button.backgroundColor
         }
 
         label: Text {
@@ -49,9 +56,7 @@ Button {
             font.bold: false
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
-            color: "#448"
+            color: button.textColor
         }
-
-
     }
 }

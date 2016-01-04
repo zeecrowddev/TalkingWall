@@ -16,5 +16,6 @@
         <file>Resources/camera.png</file>
         <file>Components/Alert.qml</file>
         <file>Components/AlertButtonStyle.qml</file>
+        <file>Resources/camera-toggle-front-back.png</file>
     </qresource>
 </RCC>

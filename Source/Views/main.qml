@@ -359,14 +359,27 @@ Zc.AppView {
                 if (fileName.indexOf(_extensionSound) !== -1)
                     return;
 
+                console.log("UPLOADED: " + fileName);
+
                 if (fileName.indexOf(_extensionSound) === -1) {
-                    appNotification.logEvent(Zc.AppNotification.Add,"File",fileName,"image://icons/" + "file:///" + fileName);
-                    notifySender.sendMessage("","{ \"action\" : \"added\" , \"fileName\" : \"" + fileName + "\" , \"lastModified\" : \"" + currentFileDescriptor.timeStamp + "\" }");
+                    appNotification.logEvent(0 /*Zc.AppNotification.Add*/, "File", fileName, "image://icons/" + "file:///" + fileName);
+
+                    var message = {
+                        action: "added",
+                        fileName: fileName,
+                        size: currentFileDescriptor.size,
+                        lastModified: currentFileDescriptor.timeStamp
+                    };
+                    notifySender.sendMessage("", JSON.stringify(message));
                 }
             }
 
             onFileDeleted: {
-                notifySender.sendMessage("","{ \"action\" : \"deleted\" , \"fileName\" : \"" + fileName + "\" } ");
+                var message = {
+                    action: "deleted",
+                    fileName: fileName
+                };
+                notifySender.sendMessage("", JSON.stringify(message));
             }
         }
 
